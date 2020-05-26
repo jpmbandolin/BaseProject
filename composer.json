@@ -1,0 +1,19 @@
+{
+	"require": {
+		"monolog/monolog": "^1.24",
+		"slim/slim": "4.*",
+		"firebase/php-jwt": "5.*",
+		"ext-pdo": "*"
+	},
+	"prefer-stable": true,
+	"autoload": {
+		"files": [
+
+		]
+	},
+	"config": {
+		"platform": {
+			"php": "7.2"
+		}
+	}
+}
