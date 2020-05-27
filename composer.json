@@ -1,12 +1,15 @@
 {
 	"require": {
 		"monolog/monolog": "^1.24",
-		"slim/slim": "4.*",
+		"slim/slim": "3.*",
 		"firebase/php-jwt": "5.*",
+		"phpunit/phpunit": "^8",
+		"tuupola/slim-jwt-auth": "<3",
 		"ext-pdo": "*"
 	},
 	"prefer-stable": true,
 	"autoload": {
+		"psr-4": { "": "src/" },
 		"files": [
 
 		]

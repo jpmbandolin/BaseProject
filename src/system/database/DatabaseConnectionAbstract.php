@@ -1,8 +1,9 @@
 <?php
 namespace system\database;
 
-use Monolog\Logger;
 use system\exceptions\DatabaseException;
+use system\exceptions\RuntimeException;
+use system\Logger;
 
 abstract class DatabaseConnectionAbstract extends \PDO{
 	/**
@@ -18,6 +19,10 @@ abstract class DatabaseConnectionAbstract extends \PDO{
 	 */
 	private $pass;
 	/**
+	 * @var string database do sistema
+	 */
+	private $database;
+	/**
 	 * @var Logger Responsável por registrar os logs da classe
 	 */
 	private $logger;
@@ -25,21 +30,25 @@ abstract class DatabaseConnectionAbstract extends \PDO{
 	/**
 	 * DatabaseConnectionAbstract constructor.
 	 * @throws DatabaseException
+	 * @throws RuntimeException
 	 */
 	function __construct(){
 		global $ENV;
-
-		//@todo criar a classe de logger
+		$dbEnv = $ENV['DATABASE_CONNECTION'];
+		$this->logger = new Logger(get_class($this));
 
 		if(is_a($this, __NAMESPACE__ . '\\' .'DatabaseConnection')){
-			list($this->host, $this->user, $this->pass) = [$ENV['host'], $ENV['user'], $ENV['pass']];
+			[$this->host, $this->user, $this->pass, $this->database] = [$dbEnv['host'], $dbEnv['user'], $dbEnv['pass'], $dbEnv['database']];
 		}else{
 			throw new DatabaseException("Classe de conexão com o banco não implementada");
 		}
 
+		$dsn = 'mysql:dbname=' . $this->database .';host=' . $this->host;
+
 		try{
-			parent::__construct($this->host, $this->user, $this->pass, ["charset"=>"utf8"]);
+			parent::__construct($dsn, $this->user, $this->pass, ["charset"=>"utf8"]);
 		}catch(\Throwable $t){
+			$this->logger->alert("Banco de dados não disponível");
 			throw new DatabaseException("Erro ao iniciar conexão com o banco de dados", 0, $t);
 		}
 	}
@@ -52,6 +61,7 @@ abstract class DatabaseConnectionAbstract extends \PDO{
 	 * @return mixed
 	 */
 	public function fetchObject($sql, $args = array(), $class_name = "stdClass"){
+		$this->logger->info($sql, ["params"=>json_encode($args)]);
 		$sql    = $this->prepareAndExecute($sql, $args);
 		$object = $sql->fetchObject($class_name);
 		$sql->closeCursor();
@@ -66,6 +76,7 @@ abstract class DatabaseConnectionAbstract extends \PDO{
 	 * @return array
 	 */
 	public function fetchMultiObject($sql, $args = array(), $class_name = "stdClass"){
+		$this->logger->info($sql, ["params"=>json_encode($args)]);
 		$sql    = $this->prepareAndExecute($sql, $args);
 		$array  = $sql->fetchAll(self::FETCH_CLASS, $class_name);
 		$sql->closeCursor();
@@ -79,6 +90,7 @@ abstract class DatabaseConnectionAbstract extends \PDO{
 	 * @return bool|\PDOStatement
 	 */
 	public function prepareAndExecute($sql, $args = array()){
+		$this->logger->info($sql, ["params"=>json_encode($args)]);
 		$sql = $this->prepare($sql);
 		if(empty($args)){
 			$sql->execute();
