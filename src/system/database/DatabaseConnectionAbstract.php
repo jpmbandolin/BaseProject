@@ -47,6 +47,7 @@ abstract class DatabaseConnectionAbstract extends \PDO{
 
 		try{
 			parent::__construct($dsn, $this->user, $this->pass, ["charset"=>"utf8"]);
+			$this->exec("set names utf8");
 		}catch(\Throwable $t){
 			$this->logger->alert("Banco de dados não disponível");
 			throw new DatabaseException("Erro ao iniciar conexão com o banco de dados", 0, $t);

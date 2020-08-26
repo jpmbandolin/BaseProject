@@ -4,6 +4,7 @@
 namespace system\exceptions;
 
 
+use system\database\DatabaseConnection;
 use system\Logger;
 use Throwable;
 
@@ -16,6 +17,7 @@ abstract class AppExceptionAbstract extends \Exception{
 		$logger = new Logger(get_class($this));
 
 		$logger->error($message, $this->getPreviousDetails());
+		$this->saveDatabase();
 	}
 
 	private function getPreviousDetails(){
@@ -33,5 +35,20 @@ abstract class AppExceptionAbstract extends \Exception{
 		}
 
 		return $this->errorStack;
+	}
+
+	/**
+	 * Salva os dados da exception no banco de dados.
+	 * @return bool true caso tenha sucesso, false em caso de erro.
+	 */
+	protected function saveDatabase(){
+		$sql = "INSERT INTO exception_logs (cFile, cTrace) VALUES(?, ?)";
+		try{
+			DatabaseConnection::getInstance()->prepareAndExecute($sql, [$this->getFile(), $this->errorStack]);
+		}catch(Throwable $t){
+			return false;
+		}
+
+		return true;
 	}
 }

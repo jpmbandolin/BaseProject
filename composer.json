@@ -5,7 +5,8 @@
 		"firebase/php-jwt": "5.*",
 		"phpunit/phpunit": "^8",
 		"tuupola/slim-jwt-auth": "<3",
-		"ext-pdo": "*"
+		"ext-pdo": "*",
+		"ext-json": "*"
 	},
 	"prefer-stable": true,
 	"autoload": {

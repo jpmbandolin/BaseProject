@@ -57,5 +57,4 @@ class Logger extends \Monolog\Logger{
 		});
 	}
 
-
 }
